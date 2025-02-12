@@ -1,0 +1,28 @@
+# Ignore Python bytecode and cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment
+venv/
+key.json
+
+# Ignore environment variables and credentials
+.env
+*.env
+config.json
+
+# Ignore compiled files and logs
+*.log
+*.sqlite3
+instance/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.swp
