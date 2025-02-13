@@ -1,6 +1,7 @@
 from flask import Flask, request
 
 from src.L1 import L1BasicAPIChatbot
+from src.L2 import L2StoreRetrieveMovieScript
 
 app = Flask(__name__)
 
@@ -12,9 +13,8 @@ def L1():
 
 @app.route('/L2/chat', methods=['POST'])
 @app.route('/l2/chat', methods=['POST'])
-def L2():
-    print(request.json)
-    return "heloow\n"
+async def L2():
+    return await L2StoreRetrieveMovieScript.handler(request)
 
 if __name__ == '__main__':
     app.run(debug=True)
