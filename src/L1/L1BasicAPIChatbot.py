@@ -1,4 +1,4 @@
-from ..LLM import llm
+from ..lib.LLM import llm
 
 
 def handler(request):

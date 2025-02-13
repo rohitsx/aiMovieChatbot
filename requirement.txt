@@ -3,4 +3,4 @@ langchain-google-vertexai>=0.3
 python-dotenv 
 beautifulsoup4>=4.13.3
 requests>=2.32.3
-psycopg2>=2.9.10
+asyncpg>=0.30.0
