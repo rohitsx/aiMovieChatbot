@@ -1,4 +1,4 @@
-from ..lib.psql import get_connection 
+from ..lib.db.psql import get_connection 
 from ..lib.LLM import llm
 
 async def handler(request):
@@ -16,7 +16,7 @@ async def find_script(req_json):
         script = req_json["script"]
         cursor = await conn.fetch(
             f"""SELECT * FROM movie_scripts 
-            WHERE similarity(script_text, '{script}') > 0.8
+            WHERE similarity(script_text, '{script}') > 0.6
             ORDER BY similarity(script_text, '{script}') DESC
             LIMIT 1;"""
         )

@@ -1,11 +1,3 @@
-import requests
-from bs4 import BeautifulSoup
-from psql import create_table, get_connection 
-import asyncio
-
-
-movie_data = []
-
 async def start_scrape():
     url = "https://imsdb.com/all-scripts.html"
     headers = {"User-Agent": "Mozilla/5.0"}  

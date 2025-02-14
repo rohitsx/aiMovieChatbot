@@ -5,3 +5,5 @@ python-dotenv
 beautifulsoup4>=4.13.3
 requests>=2.32.3
 asyncpg>=0.30.0
+langchain-community>=0.3
+langchain-chroma>=0.1.2
