@@ -1,11 +1,11 @@
-from ..lib.db.chromadb import vector_store
+from ..lib.db.Qdrant import vector_store
 
 
 def handler(request):
     script = request.json["script"]
-    print(script)
     results = vector_store.similarity_search(query=script,k=1)
     for res in results:
         print(f"Retrieved Document: {res.page_content}")
-    return "working\n"
+        return {"movie_name": res.metadata["movie_name"], "script_url": res.metadata["script_url"], "script": res.page_content}
+    return "data not found\n"
 

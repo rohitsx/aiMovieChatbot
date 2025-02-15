@@ -12,18 +12,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-
-  chromadb:
-    image: chromadb/chroma
-    container_name: chromadb
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: aIMovieCharacterChatbotQdrant
     restart: always
     ports:
-      - "8000:8000"
+      - "6333:6333"
+      - "6334:6334"
     volumes:
-      - chroma_data:/chroma
-
+      - qdrant_data:/qdrant/storage
 
 volumes:
   postgres_data:
-  chroma_data:
-
+  qdrant_data:
