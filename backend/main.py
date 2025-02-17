@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from redis.asyncio import Redis
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from src.lib import script_scraper, update_vectorDb
@@ -25,6 +26,18 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 rate_limite = [Depends(RateLimiter(times=5, seconds=1))]
+
+origins = ["http://localhost:3000"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 @app.post('/chat/L1', dependencies=rate_limite)
 @app.post('/chat/l1', dependencies=rate_limite)
@@ -51,7 +64,7 @@ async def L4(req: Request):
 
 
 async def run_background_tasks():
-    await script_scraper.main()
+    await script_scraper.main() 
     await update_vectorDb.main()
     
 

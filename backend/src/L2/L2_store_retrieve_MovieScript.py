@@ -5,7 +5,7 @@ async def handler(request):
     req_json = await request.json()
     if "script" in req_json:
         return await find_script(req_json)
-    return "invalid request\n"
+    return "invalid request"
 
 async def find_script(req_json):
     conn = await get_connection()
@@ -42,5 +42,5 @@ def send_ai_response(script):
     ]
 
     ai_msg = llm.invoke(message)
-    return {"ai_response": ai_msg.content}
+    return {"note": "data not found","ai_response": ai_msg.content}
 
