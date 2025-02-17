@@ -1,8 +1,8 @@
 from ..lib.LLM import llm
 
 
-def handler(request):
-    req_json = request.json
+async def handler(request):
+    req_json = await request.json()
     if "character" in req_json and "user_message" in req_json:
         return generate_character_res(req_json)
     else:

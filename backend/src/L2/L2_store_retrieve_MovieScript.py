@@ -2,7 +2,7 @@ from ..lib.db.psql import get_connection
 from ..lib.LLM import llm
 
 async def handler(request):
-    req_json = request.json
+    req_json = await request.json()
     if "script" in req_json:
         return await find_script(req_json)
     return "invalid request\n"
