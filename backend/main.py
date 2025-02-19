@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, WebSocket
 from contextlib import asynccontextmanager
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
@@ -12,6 +12,8 @@ from src.L1 import L1_basic_API_chatbot
 from src.L2 import L2_store_retrieve_MovieScript
 from src.L3 import L3_implement_RAG_with_vectorSearch
 from src.L4 import L4_scale
+from src.L5.L5_optimize_for_latency import L5
+
 
 
 REDIS_URL = "redis://127.0.0.1:6379"
@@ -61,6 +63,17 @@ async def L3(req: Request):
 @app.post('/chat/l4', dependencies=rate_limite)
 async def L4(req: Request):
     return await L4_scale.handler(req)
+
+
+@app.websocket("/chat/L5")
+@app.websocket("/chat/l5")
+async def websocket_endpoint(websocket: WebSocket):
+    try:
+        l5_instance = L5()
+        await l5_instance.handler(websocket)
+    except Exception:
+        pass
+
 
 
 async def run_background_tasks():

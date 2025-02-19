@@ -11,6 +11,7 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedRoute, setSelectedRoute] = useState<string>("/chat/l1");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [ws, setWs] = useState<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const routes: Route[] = [
@@ -18,6 +19,7 @@ const ChatInterface = () => {
     { path: "/chat/l2", name: "L2 - Movie Script Storage" },
     { path: "/chat/l3", name: "L3 - RAG with Vector Search" },
     { path: "/chat/l4", name: "L4 - Scaled Version" },
+    { path: "/chat/l5", name: "L5 - Optimize for Latency & Chat History" },
   ];
 
   useEffect(() => {
@@ -40,15 +42,20 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000${selectedRoute}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formatRequestBody(userMessage)),
-      });
+      let data: string;
+      if (selectedRoute === "/chat/l5" && ws) {
+        ws.send(JSON.stringify(formatRequestBody(userMessage)));
+      } else {
+        const response = await fetch(`http://127.0.0.1:8000${selectedRoute}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formatRequestBody(userMessage)),
+        });
 
-      if (!response.ok) throw new Error("Network response was not ok");
+        if (!response.ok) throw new Error("Network response was not ok");
+        data = await response.json();
+      }
 
-      const data = await response.json();
       setMessages((prev) => [...prev, { role: "assistant", content: data }]);
     } catch (error) {
       setMessages((prev) => [
@@ -64,6 +71,19 @@ const ChatInterface = () => {
     }
   };
 
+  useEffect(() => {
+    if (selectedRoute === "/chat/l5") {
+      const test = new WebSocket("ws://127.0.0.1:8000/chat/l5");
+      setWs(test);
+
+      test.onmessage = (event) => console.log(event.data);
+    }
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [selectedRoute]);
+
   const formatContent = (content: any): string => {
     if (typeof content === "string") return content;
     try {
@@ -78,7 +98,9 @@ const ChatInterface = () => {
       <Card className="max-w-3xl mx-auto">
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl text-gray-800">AI Chatbot Demo</CardTitle>
+            <CardTitle className="text-xl text-gray-800">
+              AI Chatbot Demo
+            </CardTitle>
             <div className="relative">
               <button
                 type="button"
@@ -118,11 +140,12 @@ const ChatInterface = () => {
                   key={index}
                   className={`
                     max-w-[80%] rounded-lg p-4 shadow-sm
-                    ${message.role === "user" 
-                      ? "ml-auto bg-blue-500 text-white" 
-                      : message.role === "assistant"
-                        ? "bg-white" 
-                        : "bg-red-50 text-red-800"
+                    ${
+                      message.role === "user"
+                        ? "ml-auto bg-blue-500 text-white"
+                        : message.role === "assistant"
+                          ? "bg-white"
+                          : "bg-red-50 text-red-800"
                     }
                   `}
                 >
@@ -131,7 +154,9 @@ const ChatInterface = () => {
                       {formatContent(message.content)}
                     </pre>
                   ) : (
-                    <div className="text-sm">{formatContent(message.content)}</div>
+                    <div className="text-sm">
+                      {formatContent(message.content)}
+                    </div>
                   )}
                 </div>
               ))}

@@ -38,3 +38,24 @@ async def create_table():
             await conn.close()
     else:
         print("Failed to connect to PostgreSQL.")
+
+
+async def create_chat_history_table():
+    conn = await get_connection();
+
+    if conn:
+        try: 
+            await conn.execute("""
+                CREATE TABLE ID NOT EXISTS chat_history (
+                    id SERIAL PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    message TEXT NOT NULL
+                )
+            """)
+            print("chat_history Table created successfully.")
+        except Exception as e:
+            print(f"Error executing SQL: {e}")
+        finally:
+            await conn.close()
+    else:
+        print("Failed to connect to PostgreSQL.")
