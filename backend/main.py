@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import Depends, FastAPI, Request, WebSocket
 from contextlib import asynccontextmanager
 from fastapi_limiter import FastAPILimiter
@@ -13,6 +12,8 @@ from src.L2 import L2_store_retrieve_MovieScript
 from src.L3 import L3_implement_RAG_with_vectorSearch
 from src.L4 import L4_scale
 from src.L5.L5_optimize_for_latency import L5
+from src.lib.db.psql import create_table, create_chat_history_table
+from src.L5.db_operations import check_username_exits
 
 
 
@@ -23,8 +24,17 @@ REDIS_URL = "redis://127.0.0.1:6379"
 async def lifespan(_: FastAPI):
     redis_connection = Redis.from_url(REDIS_URL, encoding="utf8")
     await FastAPILimiter.init(redis_connection)
+
+    await create_table()
+    await create_chat_history_table()
+
+    await script_scraper.main() 
+    await update_vectorDb.main()
+    print("Background tasks completed.")
+
     yield
     await FastAPILimiter.close()
+
 
 app = FastAPI(lifespan=lifespan)
 rate_limite = [Depends(RateLimiter(times=5, seconds=1))]
@@ -74,14 +84,10 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         pass
 
-
-
-async def run_background_tasks():
-    await script_scraper.main() 
-    await update_vectorDb.main()
-    
+@app.post("/check_username_exits/{username}", dependencies=rate_limite)
+async def check_username_exits_endpoint(username: str):
+    return await check_username_exits(username)
 
 
 if __name__ == '__main__':
-    asyncio.run(run_background_tasks())
     uvicorn.run(app, host="0.0.0.0", port=8000)

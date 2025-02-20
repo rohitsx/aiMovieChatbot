@@ -3,6 +3,7 @@ from ..lib.db.Qdrant import vector_store
 from ..lib.LLM import llm
 from langchain_core.globals import set_llm_cache
 from langchain_community.cache import SQLiteCache
+from ..L5.db_operations import add_chat_history
 import time
 
 set_llm_cache(SQLiteCache(database_path="src/cache/langchain.db"))
@@ -49,11 +50,16 @@ class msg_handler:
             ]
 
             ai_msg = llm.invoke(message)
-            response = {"movie_name": movie_name, "script_url": script_url, "dialogue": dialogue, "ai_response": ai_msg.content}
+            ai_res = ai_msg.content if ai_msg else "Can't reply to this message, try a different prompt"
+            response = {"movie_name": movie_name, "script_url": script_url, "dialogue": dialogue, "ai_response": ai_res}
+
 
             print(f"CPU Response Time: {time.time() - start_time:.6f} seconds")
 
-            return await ws.send_json(response)
+            print(ai_msg.content)
+            await ws.send_json(response)
+            return await add_chat_history(ws.query_params.get("username"), human_msg, ai_res)
+
 
 
         except Exception as err:

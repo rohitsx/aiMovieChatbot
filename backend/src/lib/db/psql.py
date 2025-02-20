@@ -31,7 +31,7 @@ async def create_table():
                 CREATE EXTENSION IF NOT EXISTS pg_trgm;
                 """
             )
-            print("Table created successfully.")
+            print("movie_scripts Table created successfully.")
         except Exception as e:
             print(f"Error executing SQL: {e}")
         finally:
@@ -46,10 +46,11 @@ async def create_chat_history_table():
     if conn:
         try: 
             await conn.execute("""
-                CREATE TABLE ID NOT EXISTS chat_history (
+                CREATE TABLE IF NOT EXISTS chat_history (
                     id SERIAL PRIMARY KEY,
-                    user_id TEXT NOT NULL,
-                    message TEXT NOT NULL
+                    username TEXT NOT NULL,
+                    human_msg TEXT NOT NULL,
+                    ai_msg TEXT 
                 )
             """)
             print("chat_history Table created successfully.")

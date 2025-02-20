@@ -5,6 +5,8 @@ from langchain_community.cache import SQLiteCache
 import time
 
 
+set_llm_cache(SQLiteCache(database_path="src/cache/langchain.db"))
+
 async def handler(req):
     start_time = time.time()
 
@@ -24,7 +26,6 @@ async def handler(req):
         ("human", human_msg),
     ]
 
-    set_llm_cache(SQLiteCache(database_path="src/cache/langchain.db"))
     ai_msg = llm.invoke(message)
     response = {"movie_name": movie_name, "script_url": script_url, "dialogue": dialogue, "ai_response": ai_msg.content}
 

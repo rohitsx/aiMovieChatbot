@@ -83,7 +83,6 @@ class MovieScript:
             return
 
         print("Starting script...")
-        await create_table()
         async with aiohttp.ClientSession() as session:
             await self.fetch_page_urls(session)
             movie_scripts = await self.get_movie_scripts(session)
