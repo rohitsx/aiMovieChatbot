@@ -1,5 +1,5 @@
-from ..lib.db.psql import get_connection 
-from ..lib.LLM import llm
+from src.lib.db.psql import get_connection 
+from src.lib.LLM import llm
 
 async def handler(request):
     req_json = await request.json()

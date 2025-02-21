@@ -1,6 +1,6 @@
-from ..lib.db.psql import get_connection
+from src.lib.db.psql import get_connection
 from langchain_core.documents import Document
-from ..lib.db.Qdrant import vector_store, client
+from src.lib.db.Qdrant import vector_store, client
 from qdrant_client.http.models import Distance, VectorParams
 from uuid import uuid4
 import asyncio

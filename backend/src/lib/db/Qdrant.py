@@ -1,7 +1,7 @@
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from langchain_google_vertexai import VertexAIEmbeddings
-from ..env import config    
+from src.lib.env import config    
 
 embeddings = VertexAIEmbeddings(model="text-embedding-004")
 

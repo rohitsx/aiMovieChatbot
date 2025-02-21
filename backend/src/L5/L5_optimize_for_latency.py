@@ -1,6 +1,6 @@
 from fastapi import WebSocket, WebSocketDisconnect
-from ..L5.db_operations import get_chat_history
-from ..L5.msg_handler import msg_handler
+from src.L5.db_operations import get_chat_history
+from src.L5.msg_handler import msg_handler
 
 
 class L5:

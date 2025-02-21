@@ -1,4 +1,4 @@
-from ..lib.LLM import llm
+from src.lib.LLM import llm
 
 
 async def handler(request):

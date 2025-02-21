@@ -1,5 +1,5 @@
-from ..lib.db.Qdrant import vector_store
-from ..lib.LLM import llm
+from src.lib.db.Qdrant import vector_store
+from src.lib.LLM import llm
 import time
 
 

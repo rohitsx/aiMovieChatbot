@@ -1,5 +1,5 @@
 import asyncpg
-from ..env import config
+from src.lib.env import config
 
 async def get_connection():
     try:

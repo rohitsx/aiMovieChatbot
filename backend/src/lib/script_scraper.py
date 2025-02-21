@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from ..lib.db.psql import get_connection 
+from src.lib.db.psql import get_connection 
 import aiohttp
 import re
 import asyncio
