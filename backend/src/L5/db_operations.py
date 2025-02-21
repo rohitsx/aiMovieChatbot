@@ -1,5 +1,4 @@
 from ..lib.db.psql import get_connection
-import json
 
 async def get_chat_history(username:str):
     db = await get_connection()
@@ -9,8 +8,6 @@ async def get_chat_history(username:str):
             chat_history = await db.fetch("SELECT * FROM chat_history WHERE username = $1", username)
             json_output = [dict(record) for record in chat_history]
 
-            print(json.dumps(json_output, indent=4, ensure_ascii=False))
-        
             return json_output
         except Exception as e:
             print(f"Error executing SQL: {e}")
@@ -41,7 +38,6 @@ async def check_username_exits(username:str):
     if db:
         try:
             result = await db.fetchval("SELECT COUNT(*) FROM chat_history WHERE username = $1", username)
-            print(result)
             return result == 0
         except Exception as e:
             print(f"Error executing SQL: {e}")

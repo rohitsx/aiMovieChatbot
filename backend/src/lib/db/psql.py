@@ -1,14 +1,9 @@
 import asyncpg
+from ..env import config
 
 async def get_connection():
     try:
-        conn = await asyncpg.connect(
-            database="mydatabase",
-            user="myuser",
-            password="mypassword",
-            host="127.0.0.1",
-            port=5432,
-        )
+        conn = await asyncpg.connect(config["PSQL_URI"])
         return conn
     except Exception as e:
         print(f"Error connecting to PostgreSQL: {e}")

@@ -1,18 +1,35 @@
 "use client";
 
 import { useState, FormEvent, useEffect, useRef } from "react";
-import { Send, ChevronDown } from "lucide-react";
+import { Send, ChevronDown, Clock } from "lucide-react";
 import { Message, Route, L1Request, L2Request } from "../types/chat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+interface EnhancedMessage extends Message {
+  responseTime?: number;
+}
 
 const ChatInterface = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<EnhancedMessage[]>([]);
   const [input, setInput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedRoute, setSelectedRoute] = useState<string>("/chat/l1");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [showUsernameDialog, setShowUsernameDialog] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pendingMessageRef = useRef<boolean>(false);
+  const messageStartTimeRef = useRef<number>(0);
 
   const routes: Route[] = [
     { path: "/chat/l1", name: "L1 - Basic API Chatbot" },
@@ -25,6 +42,46 @@ const ChatInterface = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleUsernameSubmit = () => {
+    if (username.trim()) {
+      localStorage.setItem("username", username.trim());
+      setShowUsernameDialog(false);
+      initializeWebSocket(username.trim());
+    }
+  };
+
+  const initializeWebSocket = (user: string) => {
+    const test = new WebSocket(`ws://127.0.0.1:8000/chat/l5?username=${user}`);
+    setWs(test);
+
+    test.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const { chat_history, ai_response } = data;
+      if (chat_history || ai_response) {
+        const responseTime = Date.now() - messageStartTimeRef.current;
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: chat_history || ai_response,
+            responseTime,
+          },
+        ]);
+        if (pendingMessageRef.current) {
+          setIsLoading(false);
+          pendingMessageRef.current = false;
+        }
+      }
+    };
+
+    test.onerror = () => {
+      if (pendingMessageRef.current) {
+        setIsLoading(false);
+        pendingMessageRef.current = false;
+      }
+    };
+  };
 
   const formatRequestBody = (message: string): L1Request | L2Request => {
     return selectedRoute === "/chat/l1"
@@ -40,10 +97,11 @@ const ChatInterface = () => {
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setInput("");
     setIsLoading(true);
+    messageStartTimeRef.current = Date.now();
 
     try {
-      let data: string;
       if (selectedRoute === "/chat/l5" && ws) {
+        pendingMessageRef.current = true;
         ws.send(JSON.stringify(formatRequestBody(userMessage)));
       } else {
         const response = await fetch(`http://127.0.0.1:8000${selectedRoute}`, {
@@ -53,34 +111,51 @@ const ChatInterface = () => {
         });
 
         if (!response.ok) throw new Error("Network response was not ok");
-        data = await response.json();
+        const data = await response.json();
+        const responseTime = Date.now() - messageStartTimeRef.current;
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data,
+            responseTime,
+          },
+        ]);
+        setIsLoading(false);
       }
-
-      setMessages((prev) => [...prev, { role: "assistant", content: data }]);
     } catch (error) {
+      const responseTime = Date.now() - messageStartTimeRef.current;
       setMessages((prev) => [
         ...prev,
         {
           role: "system",
           content: "Sorry, there was an error processing your request.",
+          responseTime,
         },
       ]);
       console.error("Error:", error);
-    } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
     if (selectedRoute === "/chat/l5") {
-      const test = new WebSocket("ws://127.0.0.1:8000/chat/l5");
-      setWs(test);
-
-      test.onmessage = (event) => console.log(event.data);
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) {
+        initializeWebSocket(storedUsername);
+      } else {
+        setShowUsernameDialog(true);
+      }
     }
 
     return () => {
-      if (ws) ws.close();
+      if (ws) {
+        ws.close();
+        if (pendingMessageRef.current) {
+          setIsLoading(false);
+          pendingMessageRef.current = false;
+        }
+      }
     };
   }, [selectedRoute]);
 
@@ -93,8 +168,41 @@ const ChatInterface = () => {
     }
   };
 
+  const formatResponseTime = (ms: number): string => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(2)}s`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <Dialog open={showUsernameDialog} onOpenChange={setShowUsernameDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Username</DialogTitle>
+            <DialogDescription>
+              Please enter a username to continue with L5 chat
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleUsernameSubmit();
+              }}
+            />
+            <Button
+              onClick={handleUsernameSubmit}
+              disabled={!username.trim()}
+              className="w-full"
+            >
+              Continue
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Card className="max-w-3xl mx-auto">
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
@@ -149,6 +257,12 @@ const ChatInterface = () => {
                     }
                   `}
                 >
+                  {message.role === "assistant" && message.responseTime && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                      <Clock className="w-3 h-3" />
+                      Response time: {formatResponseTime(message.responseTime)}
+                    </div>
+                  )}
                   {message.role === "assistant" ? (
                     <pre className="whitespace-pre-wrap font-mono text-sm">
                       {formatContent(message.content)}

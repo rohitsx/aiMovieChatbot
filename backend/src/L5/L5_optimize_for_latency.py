@@ -12,7 +12,7 @@ class L5:
                 return
 
             await ws.accept()
-            await ws.send_text("Connection established")
+            await ws.send_json({"message":"Connection established"})
 
             chat_history = await get_chat_history(username)
             await ws.send_json({"chat_history": chat_history})
@@ -31,7 +31,7 @@ class L5:
         try:
             data = await ws.receive_json()
 
-            human_msg = data.get("human_msg")
+            human_msg = data.get("script")
 
             if human_msg:
                 handler = msg_handler()

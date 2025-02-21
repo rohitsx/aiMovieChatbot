@@ -4,6 +4,7 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from redis.asyncio import Redis
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 import uvicorn
 
 from src.lib import script_scraper, update_vectorDb
@@ -14,15 +15,13 @@ from src.L4 import L4_scale
 from src.L5.L5_optimize_for_latency import L5
 from src.lib.db.psql import create_table, create_chat_history_table
 from src.L5.db_operations import check_username_exits
-
-
-
-REDIS_URL = "redis://127.0.0.1:6379"
-
+from src.lib.env import config
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    redis_connection = Redis.from_url(REDIS_URL, encoding="utf8")
+    if not config["REDIS_URL"]:
+        raise ValueError("REDIS_URL is not set in .env")
+    redis_connection = Redis.from_url(config["REDIS_URL"], encoding="utf8")
     await FastAPILimiter.init(redis_connection)
 
     await create_table()
@@ -39,17 +38,24 @@ async def lifespan(_: FastAPI):
 app = FastAPI(lifespan=lifespan)
 rate_limite = [Depends(RateLimiter(times=5, seconds=1))]
 
-origins = ["http://localhost:3000"]
+if not config["ORIGINS"]:
+    raise ValueError("ORIGINS is not set in .env")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=config["ORIGINS"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+templates = Jinja2Templates(directory="templates")
+@app.get('/')
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="index.html"
+    )
 
 @app.post('/chat/L1', dependencies=rate_limite)
 @app.post('/chat/l1', dependencies=rate_limite)
@@ -84,7 +90,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         pass
 
-@app.post("/check_username_exits/{username}", dependencies=rate_limite)
+@app.post("/chat/check_username_exits/{username}", dependencies=rate_limite)
 async def check_username_exits_endpoint(username: str):
     return await check_username_exits(username)
 

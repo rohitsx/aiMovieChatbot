@@ -16,7 +16,7 @@ async def find_script(req_json):
         script = req_json["script"]
         cursor = await conn.fetch(
             f"""SELECT * FROM movie_scripts 
-            WHERE similarity(script_text, '{script}') > 0.6
+            WHERE similarity(script_text, '{script}') > 0.3
             ORDER BY similarity(script_text, '{script}') DESC
             LIMIT 1;"""
         )
