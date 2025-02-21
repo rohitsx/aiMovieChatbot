@@ -41,6 +41,9 @@ export GOOGLE_APPLICATION_CREDENTIALS='key.json'
 
 ### 6. Run the Server
 This process will take approximately 15-20 minutes to scrape data and create embeddings in QdrantDB. Once completed, the server will start automatically.
+```sh
+fastapi dev main.py 
+```
 
 Visit: [http://localhost:8000/](http://localhost:8000/)
 
