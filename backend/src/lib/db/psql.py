@@ -10,7 +10,7 @@ async def get_connection():
         return None
 
 
-async def create_table():
+async def create_table_movie_scripts():
     conn = await get_connection()
     if conn:
         try:
@@ -36,6 +36,7 @@ async def create_table():
 
 
 async def create_chat_history_table():
+
     conn = await get_connection();
 
     if conn:
@@ -55,3 +56,13 @@ async def create_chat_history_table():
             await conn.close()
     else:
         print("Failed to connect to PostgreSQL.")
+
+
+async def create_table():
+    from src.lib import script_scraper, update_vectorDb
+
+    await create_table_movie_scripts()
+    await create_chat_history_table()
+
+    await script_scraper.main()
+    await update_vectorDb.main()

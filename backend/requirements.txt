@@ -11,3 +11,4 @@ langchain-qdrant>=0.2.0
 langchain_redis>=0.1.1
 redis[hiredis]
 jinja2>=3.1.5
+uvicorn

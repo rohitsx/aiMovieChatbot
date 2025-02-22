@@ -4,6 +4,7 @@ import time
 
 
 async def handler(request):
+
     start_time = time.time()
 
     human_msg, movie_name, script_url, dialogue = await get_script(request)

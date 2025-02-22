@@ -6,14 +6,14 @@ from redis.asyncio import Redis
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 import uvicorn
+from src.lib.db.psql import create_table
 
-from src.lib import script_scraper, update_vectorDb
+
 from src.L1 import L1_basic_API_chatbot
 from src.L2 import L2_store_retrieve_MovieScript
 from src.L3 import L3_implement_RAG_with_vectorSearch
 from src.L4 import L4_scale
 from src.L5.L5_optimize_for_latency import L5
-from src.lib.db.psql import create_table, create_chat_history_table
 from src.L5.db_operations import check_username_exits
 from src.lib.env import config
 
@@ -25,11 +25,6 @@ async def lifespan(_: FastAPI):
     await FastAPILimiter.init(redis_connection)
 
     await create_table()
-    await create_chat_history_table()
-
-    await script_scraper.main() 
-    await update_vectorDb.main()
-    print("Background tasks completed.")
 
     yield
     await FastAPILimiter.close()
@@ -96,4 +91,4 @@ async def check_username_exits_endpoint(username: str):
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
