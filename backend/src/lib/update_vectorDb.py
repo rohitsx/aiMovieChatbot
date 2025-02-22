@@ -32,7 +32,7 @@ async def get_script():
         return ("data not found", e)
 
 async def add_data_to_vector_store(documents):
-    BATCH_SIZE = 10000  
+    BATCH_SIZE = 1000  
     NUM_WORKERS = 10   
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
@@ -54,17 +54,15 @@ async def add_data_to_vector_store(documents):
         print(f"Error adding data to vector store: {e}")
 
 async def main():
-    try:
-        client.create_collection(
-            collection_name="movie_scripts",
-            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
-        )
-    except Exception:
+    results = vector_store.similarity_search(query="Hii",k=1)
+    if len(results) == 0:
+        print("Populating vector store...")
+        documents = await get_script()
+        await add_data_to_vector_store(documents)
+        print("Vector store population completed.")
+    else:
         print( "Collection already exists, skipping data population.")
-        return
-    print("Populating vector store...")
-    documents = await get_script()
-    await add_data_to_vector_store(documents)
-    print("Vector store population completed.")
+
+
 
 

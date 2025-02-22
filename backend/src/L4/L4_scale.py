@@ -26,8 +26,13 @@ async def handler(req):
         ("human", human_msg),
     ]
 
-    ai_msg = llm.invoke(message)
-    response = {"movie_name": movie_name, "script_url": script_url, "dialogue": dialogue, "ai_response": ai_msg.content}
+    try:
+        ai_msg = llm.invoke(message)
+        ai_response = ai_msg.content
+    except Exception:
+        ai_response = "No data on vector db, If you are a developer please check the Qdrant DB"
+
+    response = {"movie_name": movie_name, "script_url": script_url, "dialogue": dialogue, "ai_response": ai_response}
 
     print(f"CPU Response Time: {time.time() - start_time:.6f} seconds")
     return response
