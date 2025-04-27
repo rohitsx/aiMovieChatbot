@@ -2,6 +2,9 @@
 
 API Documentation: [aiMovieChatbot API](https://aimoviebot.devrohit.tech/)
 
+🔴 **[Live Demo (currently broke)](https://aimoviebot.devrohit.tech/)** - Or checkout demo video below
+[![aiMovieChatbot API](https://img.youtube.com/vi/k1eMtm2ISLg/0.jpg)](https://www.youtube.com/watch?v=k1eMtm2ISLg)
+
 ## Overview
 aiMovieChatbot is a multi-level REST API chatbot that allows users to interact with movie characters, retrieve movie scripts, and perform semantic searches using advanced AI techniques.
 
